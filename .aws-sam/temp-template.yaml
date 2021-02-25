@@ -1,0 +1,9 @@
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 900
+      MemorySize: 1088
+      Handler: app.lambda_handler
+      CodeUri: /home/osboxes/Documents/python/sentiment-analyzer/hello_world
+      Runtime: python3.8

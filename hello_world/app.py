@@ -1,8 +1,14 @@
 import json
 import re
 import spacy
+import nltk
 import en_core_web_sm
+import pandas as pd
 from emoji import get_emoji_regexp
+
+nltk.download('wordnet')
+nltk.download('vader_lexicon')
+
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem import WordNetLemmatizer
@@ -44,11 +50,11 @@ def lambda_handler(event, context):
         pol_score['words'] = sentences
         results.append(pol_score)
 
-    print(results)
+    pd.set_option('display.max_columns', None, 'max_colwidth', None)
+    df = pd.DataFrame.from_records(results)
+    print(df)
 
     return {
         "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-        }),
+        "body": df,
     }
