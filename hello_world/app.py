@@ -8,9 +8,10 @@ from emoji import get_emoji_regexp
 
 nltk.download('wordnet')
 nltk.download('vader_lexicon')
+nltk.download('punkt')
 
 from nltk.corpus import stopwords
-from nltk.tokenize import RegexpTokenizer
+from nltk.tokenize import RegexpTokenizer, sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 from nltk import FreqDist
@@ -20,41 +21,58 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer as SIA
 def lambda_handler(event, context):
     text = event['text']
 
+    # Load tickers
+    df = pd.read_csv('./cleaned_tickers.csv')
+    tickers = df['ticker'].tolist()
+
     # Remove emojis if exists
     text = get_emoji_regexp().sub(u'', text)
+    text = re.sub(r'and|or', '.', text)
 
     # Break apart every word in the string into an individual word
     tokenizer = RegexpTokenizer('\w+|\$[\d\.]+|http\S+')
     tokenized_str = tokenizer.tokenize(text)
-
-    # Convert tokens into lowercase
-    lower_str_tokenized = [word.lower() for word in tokenized_str]
+    tokenized_str = sent_tokenize(text)
 
     # Remove stop words
     nlp = en_core_web_sm.load()
     all_stopwords = nlp.Defaults.stop_words
-    tokens_without_sw = [word for word in lower_str_tokenized if word not in all_stopwords]
+    tokens_without_sw = [word for word in tokenized_str if word not in all_stopwords]
 
     lemmatizer = WordNetLemmatizer()
     lemmatized_tokens = ([lemmatizer.lemmatize(word) for word in tokens_without_sw])
-    stemmer = PorterStemmer()
-    stem_tokens = ([stemmer.stem(word) for word in tokens_without_sw])
     cleaned_output = lemmatized_tokens
 
     # Apply a sentiment analyzer
     sia = SIA()
-    results = []
+    result = dict()
 
-    for sentences in cleaned_output:
-        pol_score = sia.polarity_scores(sentences)
-        pol_score['words'] = sentences
-        results.append(pol_score)
+    for sentence in cleaned_output:
+        pol_score = sia.polarity_scores(sentence)
+        tokenizer = RegexpTokenizer('\w+|\$[\d\.]+|http\S+')
+        words = tokenizer.tokenize(sentence)
+        ticker = None
 
-    pd.set_option('display.max_columns', None, 'max_colwidth', None)
-    df = pd.DataFrame.from_records(results)
-    print(df)
+        for word in words:
+            if word in tickers:
+                ticker = word
+
+        if not ticker:
+            continue
+
+        if ticker in result:
+            result[ticker] = pol_score['compound'] if pol_score['compound'] > result[ticker] else result[ticker]
+        else:
+            result[ticker] = pol_score['compound']
+
+    data = []
+    for ticker, sentiment_score in result.items():
+        data.append({
+            'ticker': ticker,
+            'sentiment_score': sentiment_score
+        })
 
     return {
         "statusCode": 200,
-        "body": df,
+        "body": data,
     }
