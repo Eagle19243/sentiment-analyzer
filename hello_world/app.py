@@ -1,3 +1,4 @@
+import os
 import re
 import nltk
 import en_core_web_sm
@@ -17,7 +18,7 @@ def lambda_handler(event, context):
     text = event['text']
 
     # Load tickers
-    df = pd.read_csv('./cleaned_tickers.csv')
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), './cleaned_tickers.csv'))
     tickers = df['ticker'].tolist()
 
     # Remove emojis if exists
@@ -64,6 +65,6 @@ def lambda_handler(event, context):
         })
 
     return {
-        "statusCode": 200,
-        "body": data,
+        'statusCode': 200,
+        'body': data,
     }
