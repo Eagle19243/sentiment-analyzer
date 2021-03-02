@@ -23,10 +23,6 @@ def lambda_handler(event, context):
     # Remove emojis if exists
     text = get_emoji_regexp().sub(u'', text)
     text = re.sub(r'and|or', '.', text)
-
-    # Break apart every word in the string into an individual word
-    tokenizer = RegexpTokenizer('\w+|\$[\d\.]+|http\S+')
-    tokenized_str = tokenizer.tokenize(text)
     tokenized_str = sent_tokenize(text)
 
     # Remove stop words
