@@ -1,6 +1,4 @@
-import json
 import re
-import spacy
 import nltk
 import en_core_web_sm
 import pandas as pd
@@ -10,11 +8,8 @@ nltk.download('wordnet')
 nltk.download('vader_lexicon')
 nltk.download('punkt')
 
-from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer, sent_tokenize
 from nltk.stem import WordNetLemmatizer
-from nltk.stem import PorterStemmer
-from nltk import FreqDist
 from nltk.sentiment.vader import SentimentIntensityAnalyzer as SIA
 
 
