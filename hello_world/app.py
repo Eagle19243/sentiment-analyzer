@@ -23,7 +23,7 @@ def lambda_handler(event, context):
 
     # Remove emojis if exists
     text = get_emoji_regexp().sub(u'', text)
-    text = re.sub(r'and|or', '.', text)
+    text = re.sub(r'\sand\s|\sor\s', '. ', text)
     tokenized_str = sent_tokenize(text)
 
     # Remove stop words
