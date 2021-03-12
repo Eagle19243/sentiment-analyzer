@@ -17,6 +17,10 @@ def lambda_handler(event, context):
     # Load tickers
     df = pd.read_csv(os.path.join(os.path.dirname(__file__), './cleaned_tickers.csv'))
     tickers = df['ticker'].tolist()
+    emojis = {
+        'rocket': 1.0,
+        'gem': 1.0,
+    }
 
     # Split sentences
     text = re.sub(r'\sand\s|\sor\s', '. ', text)
@@ -24,6 +28,7 @@ def lambda_handler(event, context):
 
     # Apply a sentiment analyzer
     sia = SIA()
+    sia.lexicon.update(emojis)
     result = dict()
 
     for sentence in tokenized_str:
